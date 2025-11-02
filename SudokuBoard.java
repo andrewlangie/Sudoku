@@ -1,63 +1,144 @@
-// Kimi Andrew Angkawinata Langie
+// Kimi Andrew Angkawinata Langie 
 // CS 143
-// HW #1: Sudoku #1 (Board Setup)
-// This program will setup the sudoku board by reading sudoku puzzle from a specific file
+// HW Core Topics: HW #2: Sudoku #2 (isValid, isSolved)
+// This program will check and validate the solution of the given Sudoku board
 
+import java.util.*;
 import java.io.*;
 
 public class SudokuBoard {
-    private char[][] board; 
-    
-    //PRE: filepath must be valid and should contain 9 lines with up to 9 characters each line
-    //POST: the board is initialized with values from the file.
-    public SudokuBoard(String filePath) {
-        this.board = new char[9][9];
-        loadBoardFromFile(filePath);
-    }
-    
-   //PRE: filepath must be valid to a sudoku file
-   //POST: if a line contains more than 9 characters, only the first 9 are going to be used and if an IOException occurs, an error message will pop up
-    private void loadBoardFromFile(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            int row = 0;
-
-            while ((line = reader.readLine()) != null && row < 9) {
-                line = line.trim();
-                if (line.length() > 9) {
-                    line = line.substring(0, 9);
-                }
-                
-                for (int col = 0; col < line.length(); col++) {
-                    char c = line.charAt(col);
-                    board[row][col] = (c == '.') ? ' ' : c;
-                }
-                row++;
+   public final int SIZE = 9;
+   protected char[][] myBoard;
+   
+   public SudokuBoard(String theFile) {
+      myBoard = new char[SIZE][SIZE];
+      try {
+         Scanner file = new Scanner(new File(theFile));
+         for(int row = 0; row < SIZE; row++) {
+            String theLine = file.nextLine();
+            for(int col = 0; col < theLine.length(); col++) {
+               myBoard[row][col] = theLine.charAt(col);
             }
-        } catch (IOException e) {
-            System.err.println("Error reading the file: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+         }
+      } catch(Exception e) {
+         System.out.println("Something went wrong :(");
+         e.printStackTrace();
+      }
+   }
+   
+   // Pre: Returns false
+   // Post: The method will return true if the board contains only valid numbers
+   // and has no duplicate value in any row, column, or 3x3 grid. If so, it will return false.
+   public boolean isValid(){
+      return validData() && checkRows() && checkCols() && checkMiniSquares();
+   }
+   
+   // Pre: Returns false
+   // Post: The method will return true if the board is solved based on the sudoku rules.
+   // else it returns false
+   public boolean isSolved(){
+   
+      if (!isValid()) return false;
 
-    @Override
-    
-    //PRE: the board array has been initialized and has values
-    //POST: a string will be returned where each row has a line of text and values
-    public String toString() {
-        StringBuilder result = new StringBuilder();
-
-        for (int row = 0; row < 9; row++) {
-            for (int col = 0; col < 9; col++) {
-                result.append(board[row][col]).append(" ");
+      Map<Character, Integer> countMap = new HashMap<>();
+      for (char num = '1'; num <= '9'; num++) {
+         countMap.put(num, 0);
+      }
+      
+      for (int row = 0; row < SIZE; row++) {
+         for (int col = 0; col < SIZE; col++) {
+            char val = myBoard[row][col];
+            if (val >= '1' && val <= '9') {
+               countMap.put(val, countMap.get(val) + 1);
             }
-            result.append("\n");
-        }
+         }
+      }
 
-        return result.toString();
-    }
-    
-    // TODO: create an isValid method
-    
-    // TODO: create an is Solved method
+      for (int count : countMap.values()) {
+         if (count != 9) {
+            return false;
+         }
+      }
+
+      return true;
+   }
+   
+   // Check whether all data is valid
+   private boolean validData() {
+      for (int row = 0; row < SIZE; row++) {
+         for (int col = 0; col < SIZE; col++) {
+            char val = myBoard[row][col];
+            if ((val < '1' || val > '9') && val != '.') {
+               return false;
+            }
+         }
+      }
+      return true;
+   }
+
+   // Check whether any row contains duplicates
+   private boolean checkRows() {
+      for (int row = 0; row < SIZE; row++) {
+         Set<Character> seen = new HashSet<>();
+         for (int col = 0; col < SIZE; col++) {
+            char val = myBoard[row][col];
+            if (val != '.' && !seen.add(val)) {
+               return false;
+            }
+         }
+      }
+      return true;
+   }
+
+   // Check whether any column contains duplicates
+   private boolean checkCols() {
+      for (int col = 0; col < SIZE; col++) {
+         Set<Character> seen = new HashSet<>();
+         for (int row = 0; row < SIZE; row++) {
+            char val = myBoard[row][col];
+            if (val != '.' && !seen.add(val)) {
+               return false;
+            }
+         }
+      }
+      return true;
+   }
+
+   // Check whether each 3x3 mini-square contains duplicates
+   private boolean checkMiniSquares() {
+      for (int startRow = 0; startRow < SIZE; startRow += 3) {
+         for (int startCol = 0; startCol < SIZE; startCol += 3) {
+            if (!checkMiniSquare(startRow, startCol)) {
+               return false;
+            }
+         }
+      }
+      return true;
+   }
+
+   // Helper to check a specific 3x3 mini-square for duplicates
+   private boolean checkMiniSquare(int startRow, int startCol) {
+      Set<Character> seen = new HashSet<>();
+      for (int row = 0; row < 3; row++) {
+         for (int col = 0; col < 3; col++) {
+            char val = myBoard[startRow + row][startCol + col];
+            if (val != '.' && !seen.add(val)) {
+               return false;
+            }
+         }
+      }
+      return true;
+   }
+   
+   public String toString() {
+      String result = "My Board:\n\n";
+      for(int row = 0; row < SIZE; row++) {
+         for(int col = 0; col < SIZE; col++) {
+            result += (myBoard[row][col]);
+         }
+         result += ("\n");
+      }
+      return result;
+   }
+
 }
