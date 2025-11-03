@@ -139,10 +139,8 @@ public class SudokuBoard {
        } else {
            System.out.println("The Sudoku puzzle is unsolvable.");
        }
+       // This is for the git diff and git restore command
    }
-
-   // Pre: Cell is within bounds and a value will be placed
-   // Post: Return true if a valid solution is found, if not returns false
    private boolean solveSudoku(int row, int col) {
        if (row == SIZE - 1 && col == SIZE) {
            return true;
